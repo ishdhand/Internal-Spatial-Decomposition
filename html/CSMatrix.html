@@ -1,0 +1,145 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Decomposition of a given CS matrix into internal and beamsplitter matrices</title><meta name="generator" content="MATLAB 8.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2015-08-25"><meta name="DC.source" content="CSMatrix.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Decomposition of a given CS matrix into internal and beamsplitter matrices</h1><pre class="codeinput"><span class="comment">% This code implements the decomposition algorothm presented in Section</span>
+<span class="comment">% IIIc of article "Realization of arbitrary discrete unitary transformation</span>
+<span class="comment">% using spatial and internal modes of light" by Ish Dhand and Sandeep Goyal.</span>
+<span class="comment">%</span>
+<span class="comment">% The inputs comprise:</span>
+<span class="comment">% U, a 2n_p X 2n_p unitary matrix to be decomposed</span>
+<span class="comment">% np, the number of internal modes</span>
+<span class="comment">%</span>
+<span class="comment">% The output of the code is a cell of 2n_p X 2n_p matrices, each of which</span>
+<span class="comment">% represents either an internal transformation or a beamsplitter</span>
+<span class="comment">% transformation.</span>
+<span class="comment">%</span>
+<span class="comment">% For an illustration of using this code, refer to Driver.m</span>
+
+<span class="keyword">function</span> BS = CSMatrix(S,np)
+
+<span class="comment">% S is the CS matrix</span>
+
+Theta = real(acos(diag(S(1:np,1:np)))) <span class="comment">% Use the CS matrix to compute the theta values</span>
+
+Trans = ones(np) - 2*eye(np); <span class="comment">% Transformation that connects the new thetas to the old ones</span>
+InvTrans = inv(Trans); <span class="comment">% inverse transformation</span>
+
+Theta_prime = real(InvTrans*Theta) <span class="comment">% Solve a linear system to obtain beamsplitter thetas</span>
+
+BS = cell(1,3*np);
+
+<span class="keyword">for</span> i = 1:np
+    BS{3*(i-1)+1} = blkdiag(eye(np),diag(Trans(i,:))); <span class="comment">% Sigma matrix</span>
+    BS{3*(i-1)+2} = real(kron(BS_Matrix(Theta_prime(i)),eye(np))); <span class="comment">% BS matrix using theta_prime</span>
+    BS{3*(i-1)+3} = BS{3*(i-1)+1}; <span class="comment">% Sigma matrix</span>
+<span class="keyword">end</span>
+
+<span class="keyword">end</span>
+</pre><pre class="codeoutput error">Error using CSMatrix (line 21)
+Not enough input arguments.
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2015a</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Decomposition of a given CS matrix into internal and beamsplitter matrices
+
+% This code implements the decomposition algorothm presented in Section
+% IIIc of article "Realization of arbitrary discrete unitary transformation
+% using spatial and internal modes of light" by Ish Dhand and Sandeep Goyal.
+%
+% The inputs comprise:
+% U, a 2n_p X 2n_p unitary matrix to be decomposed
+% np, the number of internal modes
+%
+% The output of the code is a cell of 2n_p X 2n_p matrices, each of which
+% represents either an internal transformation or a beamsplitter
+% transformation.
+%
+% For an illustration of using this code, refer to Driver.m
+
+function BS = CSMatrix(S,np)
+
+% S is the CS matrix
+
+Theta = real(acos(diag(S(1:np,1:np)))) % Use the CS matrix to compute the theta values
+
+Trans = ones(np) - 2*eye(np); % Transformation that connects the new thetas to the old ones
+InvTrans = inv(Trans); % inverse transformation
+
+Theta_prime = real(InvTrans*Theta) % Solve a linear system to obtain beamsplitter thetas
+
+BS = cell(1,3*np);
+
+for i = 1:np
+    BS{3*(i-1)+1} = blkdiag(eye(np),diag(Trans(i,:))); % Sigma matrix
+    BS{3*(i-1)+2} = real(kron(BS_Matrix(Theta_prime(i)),eye(np))); % BS matrix using theta_prime
+    BS{3*(i-1)+3} = BS{3*(i-1)+1}; % Sigma matrix
+end
+
+end
+
+##### SOURCE END #####
+--></body></html>
