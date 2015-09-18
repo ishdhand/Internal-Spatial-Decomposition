@@ -18,7 +18,7 @@ function BS = CSMatrix(S,np)
 
 % S is the CS matrix
 
-Theta = real(acos(diag(S(1:np,1:np)))) % Use the CS matrix to compute the theta values
+Theta = real(acos(diag(S(1:np,1:np)))); % Use the CS matrix to compute the theta values
 
 Trans = ones(np) - 2*eye(np); % Transformation that connects the new thetas to the old ones
 InvTrans = inv(Trans); % inverse transformation
