@@ -8,4 +8,4 @@ This repository comprises Matlab code for the decomposition algorithm presented 
 
 The file Driver.m illustrates the use of the two matlab functions in our decomposition. The first function (Decomposition.m) receives a unitary matrix as input, and returns internal and CS matrices (refer to article). The second function (CSMatrices.m) factorizes a received CS matrix into internal and beamsplitter matrices.
 
-Comments, suggestions and bug-fixes are welcome. Please contact me at [ishdhand@gmail.com](ishdhand@gmail.com)
+Comments, suggestions and bug-fixes are welcome. Please contact [me](http://ishdhand.me/) at [ishdhand@gmail.com](ishdhand@gmail.com)
